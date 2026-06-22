@@ -1,17 +1,22 @@
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
-let serviceAccount;
+let credential;
 
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-} else {
-  serviceAccount = require('./serviceAccount.json');
+try {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    credential = cert(serviceAccount);
+  } else {
+    const serviceAccount = require('./serviceAccount.json');
+    credential = cert(serviceAccount);
+  }
+} catch (error) {
+  console.error('Firebase credential error:', error);
+  process.exit(1);
 }
 
-initializeApp({
-  credential: cert(serviceAccount)
-});
+initializeApp({ credential });
 
 const db = getFirestore();
 
